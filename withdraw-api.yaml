@@ -1,0 +1,115 @@
+openapi: 3.0.3
+info:
+  title: Wallet API
+  version: 1.0.0
+  description: >
+    A simple wallet API.
+
+servers:
+  - url: https://api.example.com
+
+paths:
+  /accounts/{accountId}/withdraw:
+    post:
+      summary: Withdraw amount from account
+      description: >
+        Attempts to withdraw funds from an account.
+        Returns updated balance on success.
+      parameters:
+        - in: path
+          name: accountId
+          required: true
+          schema:
+            type: string
+          description: The unique account ID.
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WithdrawRequest'
+
+      responses:
+        "200":
+          description: Withdraw successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WithdrawResponse'
+
+        "400":
+          description: Invalid request (e.g., amount <= 0)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        "409":
+          description: Insufficient balance
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsufficientBalanceError'
+
+        "503":
+          description: External dependency failure (e.g., bank API timeout)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalServiceError'
+
+components:
+  schemas:
+
+    WithdrawRequest:
+      type: object
+      required: [amount]
+      properties:
+        amount:
+          type: integer
+          minimum: 1
+          description: Withdrawal amount in yen.
+
+    WithdrawResponse:
+      type: object
+      required: [accountId, withdrawnAmount, balance]
+      properties:
+        accountId:
+          type: string
+        withdrawnAmount:
+          type: integer
+        balance:
+          type: integer
+          description: New balance after withdrawal.
+
+    ErrorResponse:
+      type: object
+      required: [errorCode, message]
+      properties:
+        errorCode:
+          type: string
+          example: INVALID_REQUEST
+        message:
+          type: string
+          example: "Amount must be greater than 0."
+
+    InsufficientBalanceError:
+      allOf:
+        - $ref: '#/components/schemas/ErrorResponse'
+        - type: object
+          properties:
+            errorCode:
+              example: INSUFFICIENT_BALANCE
+            message:
+              example: "Not enough funds to complete withdrawal."
+
+    ExternalServiceError:
+      allOf:
+        - $ref: '#/components/schemas/ErrorResponse'
+        - type: object
+          properties:
+            errorCode:
+              example: EXTERNAL_SERVICE_FAILURE
+            message:
+              example: "Bank API timeout occurred."
