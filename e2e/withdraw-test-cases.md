@@ -31,5 +31,5 @@
 |---|---|---|---|
 | E2E-301 | Bank API timeout | `{ amount: 1000 }` | status: 503, errorCode: EXTERNAL_SERVICE_FAILURE |
 
-> **Note:** 503 errors are out of scope for E2E testing as they depend on external services.
+> **Note:** 503 errors can be out of scope for E2E testing as they depend on external services.
 > This scenario is already covered by integration tests. While WireMock could be used to mock external dependencies, that approach would no longer qualify as true E2E testing.
